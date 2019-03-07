@@ -6,6 +6,7 @@ plugins {
     `java-gradle-plugin`
     `maven-publish`
     id("com.jfrog.bintray") version "1.8.4"
+    id("org.camuthig.credentials") version "0.1.0"
 }
 
 group = "org.camuthig.credentials"
@@ -66,7 +67,7 @@ publishing {
             artifact(tasks["sourcesJar"])
             artifact(tasks["javadocJar"])
 
-            artifactId = "core"
+            artifactId = "org.camuthig.credentials.gradle.plugin"
 
             pom {
                 licenses {

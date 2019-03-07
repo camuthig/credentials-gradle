@@ -1,2 +1,12 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        maven {
+            url = uri("https://dl.bintray.com/camuthig/maven")
+        }
+    }
+}
+
+
 rootProject.name = 'gradle-plugin'
 
