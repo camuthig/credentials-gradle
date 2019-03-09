@@ -1,14 +1,18 @@
 package org.camuthig.credentials.gradle
 
 import com.typesafe.config.ConfigRenderOptions
+import org.camuthig.credentials.core.CredentialsFileMissing
 import org.camuthig.credentials.core.CredentialsStore
 import org.camuthig.credentials.core.FileCredentialsStore
+import org.camuthig.credentials.core.KeyFileMissing
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.options.Option
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.io.File
 
 open class CredentialsPlugin: Plugin<Project> {
@@ -34,6 +38,42 @@ open class CredentialsPlugin: Plugin<Project> {
 open class CredentialsPluginExtension {
     var credentialsFile: File? = null
     var masterKeyFile: File? = null
+
+    private val logger: Logger = LoggerFactory.getLogger("credentials")
+
+    private fun store(): CredentialsStore {
+        if (credentialsFile == null) {
+            throw CredentialsFileMissing("You must configure the credentials file first")
+        }
+
+        if (masterKeyFile == null) {
+            throw KeyFileMissing("You must configure the key file first")
+        }
+
+        return FileCredentialsStore(credentialsFile!!, masterKeyFile!!)
+    }
+
+    fun getString(key: String): String {
+        return store().load().getString(key)
+    }
+
+    fun getStringOrElse(key: String, default: String = ""): String {
+        return try {
+            val config = store().load()
+            if (config.hasPath(key)) {
+                store().load().getString(key)
+            } else {
+                logger.warn("The credentials file is missing the key $key, and default was returned")
+                default
+            }
+        } catch (e: CredentialsFileMissing) {
+            logger.warn("Credentials file is missing and was ignored")
+            default
+        } catch (e: KeyFileMissing) {
+            logger.warn("Master key file is missing and was ignored")
+            default
+        }
+    }
 }
 
 fun getStore(project: Project): CredentialsStore {
