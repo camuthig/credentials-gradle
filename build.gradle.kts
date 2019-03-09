@@ -36,6 +36,11 @@ kotlin.sourceSets["test"].kotlin.srcDirs("test")
 sourceSets["main"].resources.srcDirs("resources")
 sourceSets["test"].resources.srcDirs("test/resources")
 
+credentials {
+    masterKeyFile = file("publishing.key")
+    credentialsFile = file("publishing.conf.enc")
+}
+
 gradlePlugin {
     plugins {
         register("credentials") {
@@ -93,8 +98,8 @@ publishing {
 }
 
 bintray {
-    user = System.getProperty("bintray.user")
-    key = System.getProperty("bintray.key")
+    user = credentials.getStringOrElse("bintray.user")
+    key = credentials.getStringOrElse("bintray.key")
     publish = true
     setPublications("maven")
     pkg(delegateClosureOf<BintrayExtension.PackageConfig> {
@@ -104,7 +109,7 @@ bintray {
         githubRepo = "camuthig/credentials-gradle"
         vcsUrl = "https://github.com/camuthig/credentials-gradle"
         description = "A Gradle plugin for maintaining an encrypted credentials configuration file."
-        setLabels("kotlin")
+        setLabels("kotlin", "gradle")
         setLicenses("Apache-2.0")
         desc = description
     })
